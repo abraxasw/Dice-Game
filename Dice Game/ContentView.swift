@@ -7,7 +7,37 @@
 
 import SwiftUI
 
+// MARK: - View Modifiers
+
+struct CardStyle: ViewModifier {
+    var cornerRadius: CGFloat = 16
+    var shadowRadius: CGFloat = 8
+    var shadowY: CGFloat = 4
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.background)
+                    .shadow(color: .black.opacity(0.05), radius: shadowRadius, y: shadowY)
+            }
+    }
+}
+
+extension View {
+    func cardStyle(cornerRadius: CGFloat = 16, shadowRadius: CGFloat = 8, shadowY: CGFloat = 4) -> some View {
+        modifier(CardStyle(cornerRadius: cornerRadius, shadowRadius: shadowRadius, shadowY: shadowY))
+    }
+}
+
 struct ContentView: View {
+    // MARK: - Constants
+    private static let resetAnimationDuration: TimeInterval = 0.3
+    private static let resetDelay: TimeInterval = 0.15
+    private static let springResponse: TimeInterval = 0.4
+    private static let bannerDisplayDuration: TimeInterval = 2.0
+
+    // MARK: - Properties
     @StateObject private var gameTimer = GameTimer()
     @State private var teams: [Team] = []
     @State private var currentRound = 1
@@ -30,12 +60,12 @@ struct ContentView: View {
     }
     
     func resetAll() {
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeInOut(duration: Self.resetAnimationDuration)) {
             isResetting = true
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            withAnimation(.spring(response: 0.4)) {
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.resetDelay) {
+            withAnimation(.spring(response: Self.springResponse)) {
                 currentRound = 1
                 gameTimer.reset()
                 for index in teams.indices {
@@ -45,14 +75,14 @@ struct ContentView: View {
             }
         }
     }
-    
+
     func resetEverything() {
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeInOut(duration: Self.resetAnimationDuration)) {
             isResetting = true
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            withAnimation(.spring(response: 0.4)) {
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.resetDelay) {
+            withAnimation(.spring(response: Self.springResponse)) {
                 currentRound = 1
                 gameTimer.reset()
                 teams = []
@@ -99,11 +129,7 @@ struct ContentView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
-                    .background {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(.background)
-                            .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
-                    }
+                    .cardStyle()
                     .padding(.horizontal)
                     
                     // Progress Indicator
@@ -148,6 +174,7 @@ struct ContentView: View {
                                         teams[index].recordLastDice(at: gameTimer.elapsedTime, forRound: currentRound)
                                         if allTeamsFinished {
                                             gameTimer.stop()
+                                            onRoundComplete()
                                         }
                                     }
                                 }
@@ -235,11 +262,7 @@ struct ContentView: View {
                         }
                     }
                     .padding()
-                    .background {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(.background)
-                            .shadow(color: .black.opacity(0.05), radius: 8, y: -4)
-                    }
+                    .cardStyle(shadowY: -4)
                 }
             }
             .navigationTitle("Dice Timer")
@@ -313,7 +336,7 @@ struct ContentView: View {
         }
         
         // Hide banner after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.bannerDisplayDuration) {
             withAnimation {
                 showingCompletionBanner = false
             }
@@ -382,14 +405,14 @@ struct TeamRowView: View {
                             .foregroundStyle(.blue)
                     }
                     
-                    if let last = timing.lastDiceTime {
+                    if let last = timing.lastDiceTime, let duration = timing.duration {
                         Label(String(format: "%.2fs", last), systemImage: "checkmark.circle")
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(.green)
-                            
+
                         Spacer()
-                        
-                        Label(String(format: "%.2fs", last), systemImage: "clock")
+
+                        Label(String(format: "%.2fs", duration), systemImage: "clock")
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(.purple)
                     }
@@ -397,13 +420,9 @@ struct TeamRowView: View {
                 .frame(maxHeight: 20) // Limit the height
             }
         }
-        .padding(.vertical, 12) // Reduced vertical padding
+        .padding(.vertical, 12)
         .padding(.horizontal)
-        .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.background)
-                .shadow(color: .black.opacity(0.05), radius: 4)
-        }
+        .cardStyle(cornerRadius: 12, shadowRadius: 4, shadowY: 0)
         .padding(.horizontal)
         .opacity(isResetting ? 0.5 : 1)
         .scaleEffect(isResetting ? 0.98 : 1)

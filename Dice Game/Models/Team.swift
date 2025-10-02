@@ -9,9 +9,10 @@ struct Team: Identifiable {
     struct RoundTiming {
         var firstDiceTime: TimeInterval?
         var lastDiceTime: TimeInterval?
-        
+
         var duration: TimeInterval? {
-            lastDiceTime
+            guard let first = firstDiceTime, let last = lastDiceTime else { return nil }
+            return last - first
         }
     }
     

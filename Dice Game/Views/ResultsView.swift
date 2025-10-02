@@ -1,5 +1,15 @@
 import SwiftUI
 
+extension View {
+    func cardStyle(cornerRadius: CGFloat = 16, shadowRadius: CGFloat = 8, shadowY: CGFloat = 4) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.05), radius: shadowRadius, y: shadowY)
+        }
+    }
+}
+
 struct ResultsView: View {
     let teams: [Team]
     let currentRound: Int
@@ -112,11 +122,7 @@ struct TeamStatsCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.background)
-                .shadow(color: .black.opacity(0.05), radius: 8)
-        }
+        .cardStyle(shadowY: 0)
     }
 }
 
@@ -188,11 +194,7 @@ struct RoundStatsCard: View {
             }
         }
         .padding()
-        .background {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.background)
-                .shadow(color: .black.opacity(0.05), radius: 8)
-        }
+        .cardStyle(shadowY: 0)
     }
 }
 

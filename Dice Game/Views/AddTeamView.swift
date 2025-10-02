@@ -1,6 +1,22 @@
 import SwiftUI
 
+// Import CardStyle from ContentView
+extension View {
+    func cardStyle(cornerRadius: CGFloat = 16, shadowRadius: CGFloat = 8, shadowY: CGFloat = 4) -> some View {
+        background {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.05), radius: shadowRadius, y: shadowY)
+        }
+    }
+}
+
 struct AddTeamView: View {
+    // MARK: - Constants
+    private static let minPlayers = 1
+    private static let maxPlayers = 20
+
+    // MARK: - Properties
     @Environment(\.dismiss) var dismiss
     @Binding var teams: [Team]
     @State private var teamName = ""
@@ -31,12 +47,8 @@ struct AddTeamView: View {
                             .focused($isNameFieldFocused)
                     }
                     .padding()
-                    .background {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(.background)
-                            .shadow(color: .black.opacity(0.05), radius: 8)
-                    }
-                    
+                    .cardStyle(shadowY: 0)
+
                     // Player Count Card
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Number of Players")
@@ -51,7 +63,7 @@ struct AddTeamView: View {
                             
                             VStack {
                                 Button {
-                                    withAnimation { playerCount = min(20, playerCount + 1) }
+                                    withAnimation { playerCount = min(Self.maxPlayers, playerCount + 1) }
                                 } label: {
                                     Image(systemName: "plus")
                                         .font(.title3)
@@ -59,13 +71,13 @@ struct AddTeamView: View {
                                         .frame(width: 44, height: 32)
                                         .background {
                                             RoundedRectangle(cornerRadius: 8)
-                                                .fill(playerCount < 20 ? Color.blue : Color.secondary)
+                                                .fill(playerCount < Self.maxPlayers ? Color.blue : Color.secondary)
                                         }
                                 }
-                                .disabled(playerCount >= 20)
-                                
+                                .disabled(playerCount >= Self.maxPlayers)
+
                                 Button {
-                                    withAnimation { playerCount = max(1, playerCount - 1) }
+                                    withAnimation { playerCount = max(Self.minPlayers, playerCount - 1) }
                                 } label: {
                                     Image(systemName: "minus")
                                         .font(.title3)
@@ -73,10 +85,10 @@ struct AddTeamView: View {
                                         .frame(width: 44, height: 32)
                                         .background {
                                             RoundedRectangle(cornerRadius: 8)
-                                                .fill(playerCount > 1 ? Color.blue : Color.secondary)
+                                                .fill(playerCount > Self.minPlayers ? Color.blue : Color.secondary)
                                         }
                                 }
-                                .disabled(playerCount <= 1)
+                                .disabled(playerCount <= Self.minPlayers)
                             }
                         }
                         .padding()
@@ -86,12 +98,8 @@ struct AddTeamView: View {
                         }
                     }
                     .padding()
-                    .background {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(.background)
-                            .shadow(color: .black.opacity(0.05), radius: 8)
-                    }
-                    
+                    .cardStyle(shadowY: 0)
+
                     Spacer()
                     
                     // Add Button
